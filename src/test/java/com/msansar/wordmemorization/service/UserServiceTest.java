@@ -1,5 +1,8 @@
 package com.msansar.wordmemorization.service;
 
+import com.msansar.wordmemorization.TestDataFactory;
+import com.msansar.wordmemorization.dto.UserSaveRequestDto;
+import com.msansar.wordmemorization.dto.UserUpdateRequestDto;
 import com.msansar.wordmemorization.dto.converter.UserDtoConverter;
 import com.msansar.wordmemorization.exception.CustomDublicateKeyException;
 import com.msansar.wordmemorization.exception.CustomNotFoundException;
@@ -61,25 +64,59 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("save() Pageable sayısına göre user getirmeli")
+    void testSave(){
+
+    }
+    @Test
     @DisplayName("save() user kaydedilirse geriye bir mesaj dönmeli")
     void testSave_whenNewUserIsSaved_ShouldReturnMessage(){
+        UserSaveRequestDto saveRequestDto = TestDataFactory.getUserSaveRequestDto();
+        User user = TestDataFactory.getUser();
+
+        // when(userRepository.save(user)).thenReturn(user);
+        String result = userService.save(saveRequestDto);
+        assertEquals("Kullanıcı Kaydedildi!", result);
+
+        verify(userRepository, times(1)).save(user);
     }
 
     @Test
     @DisplayName("save() user zaten kayıtlıysa DublicateUserException throw etmeli")
     void testSave_WhenDuplicateUserIsSaved_ShouldThrowDuplicateUserException(){
+        UserSaveRequestDto saveRequestDto = TestDataFactory.getUserSaveRequestDto();
+        User user = TestDataFactory.getUser();
+        when(userRepository.save(user)).thenReturn(user);
+        assertThrows(CustomDublicateKeyException.class, () -> userService.save(saveRequestDto));
     }
 
     @Test
     @DisplayName("update() user güncellenirse geriye bir mesaj dönmeli")
     void testUpdate_whenUpdatedUser_ShouldReturnMessage(){
+        User user = TestDataFactory.getUser();
+        when(userRepository.findById("id")).thenReturn(Optional.of(user));
+
+        UserUpdateRequestDto updatedRequestDto = new UserUpdateRequestDto("id","guncelUsername", "guncelPass", "guncelEmail");
+        userService.update(updatedRequestDto);
+
+        assertEquals(updatedRequestDto.getUsername(), user.getUsername());
+        assertEquals(updatedRequestDto.getPassword(), user.getPassword());
+        assertEquals(updatedRequestDto.getEmail(), user.getEmail());
     }
 
     @Test
     void testUpdate_whenUserDoesNotExist_ShouldReturnNotFoundException(){
+        UserUpdateRequestDto updateRequestDto = TestDataFactory.getUserUpdateRequestDto();
+        when(userRepository.findById("id")).thenReturn(Optional.empty());
+        assertThrows(CustomNotFoundException.class, () -> userService.update(updateRequestDto));
     }
 
     @Test
     void testUpdate_whenDublicateUsernameAndPasswordExist_ShouldReturnDublicateKeyException(){
+        User user = TestDataFactory.getUser();
+        UserUpdateRequestDto updateRequestDto = TestDataFactory.getUserUpdateRequestDto();
+
+        when(userRepository.findById("id")).thenReturn(Optional.of(user));
+        assertThrows(CustomDublicateKeyException.class, () -> userService.update(updateRequestDto));
     }
 }
