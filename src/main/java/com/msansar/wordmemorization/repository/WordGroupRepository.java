@@ -2,8 +2,12 @@ package com.msansar.wordmemorization.repository;
 
 
 import com.msansar.wordmemorization.model.WordGroup;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface WordGroupRepository extends MongoRepository<WordGroup, String> {
+import java.awt.print.Pageable;
+
+public interface WordGroupRepository extends JpaRepository<WordGroup, String> {
 
 }
